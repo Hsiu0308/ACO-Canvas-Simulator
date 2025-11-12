@@ -2,6 +2,12 @@
 
 這是一個使用純 JavaScript、HTML 和 Canvas API 打造的蟻群演算法 (Ant Colony Optimization, ACO) 即時視覺化專案。
 
+## 🚀 即時網站預覽 (Live Demo)
+
+[**https://hsiu0308.github.io/ACO-Canvas-Simulator/**](https://hsiu0308.github.io/ACO-Canvas-Simulator/)
+
+---
+
 本專案旨在解決旅行商問題 (Traveling Salesman Problem, TSP)，並透過動畫展示演算法的運作過程：
 
 - **螞蟻模擬：** 每隻螞蟻都是一個獨立的紅點，您可以看到牠們在城市之間移動。
