@@ -7,7 +7,71 @@
   </head>
   <body>
     <h1>ACO 視覺化</h1>
-    <canvas id="acoCanvas" width="600" height="400"></canvas>
+    <div class="container">
+      <canvas id="acoCanvas" width="800" height="600"></canvas>
+      <div id="controls">
+        <h2>設定</h2>
+        <div class="control-group">
+          <label for="numAnts"
+            >螞蟻數量: <span id="numAntsValue">30</span></label
+          >
+          <input type="range" id="numAnts" min="1" max="200" value="30" />
+        </div>
+        <div class="control-group">
+          <label for="numCities"
+            >城市數量: <span id="numCitiesValue">15</span></label
+          >
+          <input type="range" id="numCities" min="3" max="50" value="15" />
+        </div>
+        <div class="control-group">
+          <label for="alpha"
+            >Alpha (費洛蒙權重): <span id="alphaValue">1.0</span></label
+          >
+          <input
+            type="range"
+            id="alpha"
+            min="0.1"
+            max="5.0"
+            step="0.1"
+            value="1.0"
+          />
+        </div>
+        <div class="control-group">
+          <label for="beta"
+            >Beta (距離權重): <span id="betaValue">2.0</span></label
+          >
+          <input
+            type="range"
+            id="beta"
+            min="0.1"
+            max="5.0"
+            step="0.1"
+            value="2.0"
+          />
+        </div>
+        <div class="control-group">
+          <label for="evaporation"
+            >費洛蒙揮發率: <span id="evaporationValue">0.05</span></label
+          >
+          <input
+            type="range"
+            id="evaporation"
+            min="0.01"
+            max="0.5"
+            step="0.01"
+            value="0.05"
+          />
+        </div>
+        <div class="control-group">
+          <label for="antSpeed"
+            >螞蟻速度: <span id="antSpeedValue">8</span></label
+          >
+          <input type="range" id="antSpeed" min="1" max="20" value="8" />
+        </div>
+        <button id="restartBtn">重新開始</button>
+        <button id="pauseBtn">暫停</button>
+      </div>
+    </div>
 
     <script src="main.js"></script>
   </body>

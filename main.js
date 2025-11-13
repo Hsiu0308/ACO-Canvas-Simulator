@@ -3,23 +3,76 @@ const ctx = canvas.getContext("2d");
 const W = canvas.width;
 const H = canvas.height;
 
-const config = {
-  numAnts: 30, // 螞蟻數量 (用 "點" 來模擬)
-  numCities: 15, // 城市數量
-  alpha: 1.0, // 費洛蒙權重
-  beta: 2.0, // 距離權重
-  evaporation: 0.05, // 費洛蒙揮發率
-  q: 100, // 費洛蒙放置總量
-  antSpeed: 8, // 螞蟻移動速度
-};
+//DOM
+const numAntsInput = document.getElementById("numAnts");
+const numAntsValue = document.getElementById("numAntsValue");
+const numCitiesInput = document.getElementById("numCities");
+const numCitiesValue = document.getElementById("numCitiesValue");
+const alphaInput = document.getElementById("alpha");
+const alphaValue = document.getElementById("alphaValue");
+const betaInput = document.getElementById("beta");
+const betaValue = document.getElementById("betaValue");
+const evaporationInput = document.getElementById("evaporation");
+const evaporationValue = document.getElementById("evaporationValue");
+const antSpeedInput = document.getElementById("antSpeed");
+const antSpeedValue = document.getElementById("antSpeedValue");
+const restartBtn = document.getElementById("restartBtn");
+const pauseBtn = document.getElementById("pauseBtn");
 
-let cities = []; // 儲存城市 { x, y }
-let distances = []; // 距離矩陣
-let pheromones = []; // 費洛蒙矩陣
-let ants = []; // 儲存所有 "螞蟻" 物件
+let config = {};
+
+let cities = [];
+let distances = [];
+let pheromones = [];
+let ants = [];
 let bestPath = null;
 let bestPathLength = Infinity;
-let generationCounter = 0; // 世代計數器
+let generationCounter = 0;
+let isPaused = false;
+let requestID;
+
+numAntsInput.addEventListener(
+  "input",
+  () => (numAntsValue.textContent = numAntsInput.value)
+);
+numCitiesInput.addEventListener(
+  "input",
+  () => (numCitiesValue.textContent = numCitiesInput.value)
+);
+alphaInput.addEventListener(
+  "input",
+  () => (alphaValue.textContent = parseFloat(alphaInput.value).toFixed(1))
+);
+betaInput.addEventListener(
+  "input",
+  () => (betaValue.textContent = parseFloat(betaInput.value).toFixed(1))
+);
+evaporationInput.addEventListener(
+  "input",
+  () =>
+    (evaporationValue.textContent = parseFloat(evaporationInput.value).toFixed(
+      2
+    ))
+);
+antSpeedInput.addEventListener(
+  "input",
+  () => (antSpeedValue.textContent = antSpeedInput.value)
+);
+
+restartBtn.addEventListener("click", restartSimulation);
+pauseBtn.addEventListener("click", togglePause);
+
+function updateConfigFromUI() {
+  config = {
+    numAnts: parseInt(numAntsInput.value),
+    numCities: parseInt(numCitiesInput.value),
+    alpha: parseFloat(alphaInput.value),
+    beta: parseFloat(betaInput.value),
+    evaporation: parseFloat(evaporationInput.value),
+    q: 100,
+    antSpeed: parseInt(antSpeedInput.value),
+  };
+}
 
 class Ant {
   constructor() {
@@ -118,7 +171,7 @@ class Ant {
   }
 }
 
-//演算法
+//Algorithm
 
 //計算機率(全域，供所有螞蟻使用)
 function calculateProbs(currentCity, visited) {
@@ -216,17 +269,57 @@ function drawCities() {
   }
 }
 
+function drawInfo() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+  ctx.fillRect(0, 0, 220, 60);
+
+  ctx.fillStyle = "white";
+  ctx.font = "14px Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(`世代: ${generationCounter}`, 10, 10);
+  ctx.fillText(`目前最佳路徑長度: ${bestPathLength.toFixed(2)}`, 10, 35);
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  pauseBtn.textContent = isPaused ? "繼續" : "暫停";
+  pauseBtn.classList.toggle("paused", isPaused);
+  if (!isPaused) {
+    mainLoop();
+  }
+}
+
+function restartSimulation() {
+  if (requestID) {
+    cancelAnimationFrame(requestID);
+  }
+
+  updateConfigFromUI();
+
+  cities = [];
+  distances = [];
+  pheromones = [];
+  ants = [];
+  bestPath = null;
+  bestPathLength = Infinity;
+  generationCounter = 0;
+  isPaused = false;
+  pauseBtn.textContent = "暫停";
+  pauseBtn.classList.remove("paused");
+
+  setup();
+}
+
 //初始化函式 (Setup)
 function setup() {
   if (config.numCities < 2) {
-    console.error("城市數量必須至少為 2 才能運行演算法。");
-    //顯示錯誤訊息
+    ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "red";
     ctx.font = "18px Arial";
     ctx.textAlign = "center";
     ctx.fillText("錯誤：城市數量必須至少為 2", W / 2, H / 2);
-
-    return; //中止執行
+    return;
   }
 
   // 隨機生成城市
@@ -265,6 +358,11 @@ function setup() {
 }
 
 function mainLoop() {
+  if (isPaused) {
+    cancelAnimationFrame(requestID);
+    return;
+  }
+
   //清空
   ctx.clearRect(0, 0, W, H);
 
@@ -283,17 +381,17 @@ function mainLoop() {
     }
   }
 
+  drawInfo();
+
   //檢查是否結束
   if (allAntsFinished) {
     generationCounter++;
-    console.log(`--- 世代 ${generationCounter} 完成 ---`);
 
     //找最佳路徑
     for (let ant of ants) {
       if (ant.pathLength < bestPathLength) {
         bestPathLength = ant.pathLength;
         bestPath = ant.path;
-        console.log(`新最佳路徑: ${bestPathLength.toFixed(2)}`);
       }
     }
 
@@ -307,7 +405,8 @@ function mainLoop() {
   }
 
   // 下一幀
-  requestAnimationFrame(mainLoop);
+  requestID = requestAnimationFrame(mainLoop);
 }
 
-setup();
+// Initial start
+restartSimulation();
